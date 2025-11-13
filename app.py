@@ -188,18 +188,23 @@ def fix_word(num):
     return fixed
     
 def check_banned_status(player_id):
-   
-    url = f"http://amin-team-api.vercel.app/check_banned?player_id={player_id}"
+    url = f"https://bancheck.tsunstudio.pw/bancheck?uid={player_id}"
     try:
         response = requests.get(url)
         if response.status_code == 200:
             data = response.json()
-            return data  
+            # Filter the response to only include the required fields
+            filtered_data = {
+                "nickname": data.get("nickname", "N/A"),
+                "AccountLevel": data.get("AccountLevel", "N/A"),
+                "status": data.get("status", "N/A"),
+                "Last_Login": data.get("Last_Login", "N/A")
+            }
+            return filtered_data
         else:
             return {"error": f"Failed to fetch data. Status code: {response.status_code}"}
     except Exception as e:
         return {"error": str(e)}
-        
 
 # --- START: ADD THIS NEW AND IMPROVED FUNCTION ---
 def send_vistttt(uid):
@@ -214,8 +219,15 @@ def send_vistttt(uid):
                 f"[FF0000]╚═══════════════════════════╝"
             )
 
+        # Get player information from the response
+        info = info_response['info']
+        nickname = info.get('AccountName', 'Unknown')
+        level = info.get('AccountLevel', 0)
+        likes = info.get('AccountLikes', 0)
+        region = info.get('AccountRegion', 'Unknown')
+
         # Step 2: Call the new visit API.
-        api_url = f"https://visit-api-316h.vercel.app/ind/{uid}"
+        api_url = f"https://visit.tsunstudio.pw/pk/{uid}"
         response = requests.get(api_url, timeout=15)
 
         # Step 3: Process the API response.
@@ -224,12 +236,6 @@ def send_vistttt(uid):
             success_count = data.get('success', 0)
 
             if success_count > 0:
-                # Extract all details from the successful response.
-                nickname = data.get('nickname', 'N/A')
-                level = data.get('level', 'N/A')
-                likes = data.get('likes', 0)
-                region = data.get('region', 'N/A')
-                
                 # Format a premium success message.
                 return (
                     f"[b][c][FF0000]╔═ ✅ Visit Success ✅ ═╗\n\n"
@@ -309,9 +315,28 @@ def newinfo(uid):
         # A successful request returns status code 200
         if response.status_code == 200:
             data = response.json()
-            # Check for a key like 'AccountName' to confirm the API returned valid data
-            if "AccountName" in data and data["AccountName"]:
-                return {"status": "ok", "info": data}
+            # Check for a key like 'AccountInfo' to confirm the API returned valid data
+            if "AccountInfo" in data and data["AccountInfo"]:
+                # Extract the relevant information from the new API response
+                account_info = data["AccountInfo"]
+                account_profile_info = data.get("AccountProfileInfo", {})
+                guild_info = data.get("GuildInfo", {})
+                social_info = data.get("SocialInfo", {})
+
+                # Create a simplified info dictionary with the required fields
+                info = {
+                    "AccountName": account_info.get("AccountName", "Unknown"),
+                    "AccountLevel": account_info.get("AccountLevel", 0),
+                    "AccountLikes": account_info.get("AccountLikes", 0),
+                    "AccountRegion": account_info.get("AccountRegion", "Unknown"),
+                    "BrMaxRank": account_profile_info.get("BrMaxRank", 0),
+                    "CsMaxRank": account_profile_info.get("CsMaxRank", 0),
+                    "GuildName": guild_info.get("GuildName", "None"),
+                    "signature": social_info.get("signature", "No signature"),
+                    "accountId": account_info.get("accountId", uid)
+                }
+
+                return {"status": "ok", "info": info}
             else:
                 # This handles cases where the API returns 200 but the ID was invalid
                 return {"status": "wrong_id"}
@@ -371,7 +396,7 @@ def send_spam(uid):
             f"-----------------------------------\n"
         )
 def attack_profail(player_id):
-    url = f"https://visit-taupe.vercel.app/visit/{player_id}"
+    url = f"https://visit.tsunstudio.pw/pk/{player_id}"
     res = requests.get(url)
     if res.status_code() == 200:
         logging.info("Done-Attack")
@@ -380,26 +405,43 @@ def attack_profail(player_id):
 
 def send_likes(uid):
     try:
-        # Attempt to connect to the new likes API for the IND server
+        # First, validate the UID using the newinfo function
+        info_response = newinfo(uid)
+
+        if info_response.get('status') != "ok":
+            return {
+                "status": "failed",
+                "message": (
+                    f"[C][B][FF0000]________________________\n"
+                    f" ❌ Invalid Player ID: {fix_num(uid)}\n"
+                    f" Please check the number and try again.\n"
+                    f"________________________"
+                )
+            }
+
+        # Get player information from the response
+        info = info_response['info']
+        player_name = info.get('AccountName', 'Unknown')
+
+        # Attempt to connect to the new likes API for the PK server
         likes_api_response = requests.get(
-            f"https://private-like-api.vercel.app/like?uid={uid}&server_name=ind&key=Nilay-Ron",
+            f"https://private-like-api.vercel.app/like?uid={uid}&server_name=PK&key=Nilay-Ron",
             timeout=15  # Add a timeout to prevent it from hanging
         )
-        
+
         # Check if the API request was successful
         if likes_api_response.status_code == 200:
             api_json_response = likes_api_response.json()
-            
+
             # Extract the nested "response" object
             response_data = api_json_response.get('response', {})
-            
+
             # Extract relevant fields
             likes_added = response_data.get('LikesGivenByAPI', 0)
-            player_name = response_data.get('PlayerNickname', 'Unknown')
             likes_before = response_data.get('LikesbeforeCommand', 0)
             likes_after = response_data.get('LikesafterCommand', 0)
             key_remaining = response_data.get('KeyRemainingRequests', 'N/A')
-            
+
             if likes_added == 0:
                 # Case: Daily limit reached or no likes added
                 return {
@@ -462,25 +504,22 @@ def send_likes(uid):
 
 def get_info(uid):
     try:
-        # Attempt to connect to the player info API
-        info_api_response = requests.get(
-            f"https://ffinfo.tsunstudio.pw/get?uid={uid}",
-            timeout=15  # Add a timeout to prevent it from hanging
-        )
-        
+        # Call the newinfo function to get player information
+        info_response = newinfo(uid)
+
         # Check if the API request was successful
-        if info_api_response.status_code == 200:
-            api_json_response = info_api_response.json()
-            
+        if info_response.get('status') == "ok":
+            info = info_response['info']
+
             # Extract relevant fields from the response
-            account_name = api_json_response.get('AccountName', 'Unknown')
-            account_level = api_json_response.get('AccountLevel', 0)
-            account_likes = api_json_response.get('AccountLikes', 0)
-            account_region = api_json_response.get('AccountRegion', 'Unknown')
-            br_max_rank = api_json_response.get('BrMaxRank', 0)
-            cs_max_rank = api_json_response.get('CsMaxRank', 0)
-            guild_name = api_json_response.get('GuildName', 'None')
-            signature = api_json_response.get('signature', 'No signature')
+            account_name = info.get('AccountName', 'Unknown')
+            account_level = info.get('AccountLevel', 0)
+            account_likes = info.get('AccountLikes', 0)
+            account_region = info.get('AccountRegion', 'Unknown')
+            br_max_rank = info.get('BrMaxRank', 0)
+            cs_max_rank = info.get('CsMaxRank', 0)
+            guild_name = info.get('GuildName', 'None')
+            signature = info.get('signature', 'No signature')
 
             # Case: Success with player details
             return {
@@ -511,17 +550,6 @@ def get_info(uid):
                 )
             }
 
-    except requests.exceptions.RequestException:
-        # Handle network errors (e.g., API is not running)
-        return {
-            "status": "failed",
-            "message": (
-                f"[C][B][FF0000]________________________\n"
-                f" ❌ API Connection Failed!\n"
-                f" Please ensure the API server is running\n"
-                f"________________________"
-            )
-        }
     except Exception as e:
         # Catch any other unexpected errors
         return {
@@ -531,7 +559,7 @@ def get_info(uid):
                 f" ❌ An unexpected error occurred: {str(e)}\n"
                 f"________________________"
             )
-        }        
+        }
 		
 def Encrypt(number):
     number = int(number)  # Convert the number to an integer
@@ -647,16 +675,11 @@ def restart_program():
     try:
         p = psutil.Process(os.getpid())
         # Close open file descriptors
-        # Use net_connections() instead of deprecated connections()
-        # Filter out invalid file descriptors (e.g., -1) before attempting to close
-        for handler in p.open_files() + p.net_connections():
-            if handler.fd > 0: # Only attempt to close valid, positive file descriptors
-                try:
-                    os.close(handler.fd)
-                except Exception as e:
-                    logging.error(f"Failed to close handler {handler.fd}: {e}")
-            else:
-                logging.debug(f"Skipping invalid file descriptor: {handler.fd}")
+        for handler in p.open_files() + p.connections():
+            try:
+                os.close(handler.fd)
+            except Exception as e:
+                logging.error(f"Failed to close handler {handler.fd}: {e}")
     except Exception as e:
         logging.error(f"Error during pre-restart cleanup: {e}")
     
@@ -746,7 +769,7 @@ class FF_CLIENT(threading.Thread):
         1: 78,
         2: {
             1: int(idroom),
-            2: "iG:[C][B][FF0000] blackx_v07",
+            2: "iG:[C][B][FF0000] ꜱꫝᴇᴇᴅ",
             4: 330,
             5: 6000,
             6: 201,
@@ -773,7 +796,7 @@ class FF_CLIENT(threading.Thread):
             1: 33,
             2: {
                 1: int(idplayer),
-                2: "IND",
+                2: "PK",
                 3: 1,
                 4: 1,
                 7: 330,
@@ -815,7 +838,7 @@ class FF_CLIENT(threading.Thread):
         fields = {
         1: 9,
         2: {
-            1: 12480598706
+            1: 12546809981
         }
         }
         packet = create_protobuf_packet(fields)
@@ -836,7 +859,7 @@ class FF_CLIENT(threading.Thread):
         1: 2,
         2: {
             1: int(idplayer),
-            2: "IND",
+            2: "PK",
             4: 1
         }
         }
@@ -858,7 +881,7 @@ class FF_CLIENT(threading.Thread):
         1: 33,
         2: {
             1: int(idplayer),
-            2: "IND",
+            2: "PK",
             3: 1,
             4: 1,
             7: 330,
@@ -934,7 +957,7 @@ class FF_CLIENT(threading.Thread):
         fields = {
         1: 17,
         2: {
-            1: 12480598706,
+            1: 12546809981,
             2: 1,
             3: int(num),
             4: 62,
@@ -962,7 +985,7 @@ class FF_CLIENT(threading.Thread):
         fields = {
         1: 7,
         2: {
-            1: 12480598706
+            1: 12546809981
         }
         }
 
@@ -1004,7 +1027,7 @@ class FF_CLIENT(threading.Thread):
         fields = {
         1: 7,
         2: {
-            1: 12480598706
+            1: 12546809981
         }
         }
 
@@ -1026,7 +1049,7 @@ class FF_CLIENT(threading.Thread):
         fields = {
             1: 1,
             2: {
-                1: 12947146032,
+                1: 12546809981,
                 2: Enc_Id,
                 3: 2,
                 4: str(Msg),
@@ -1035,7 +1058,7 @@ class FF_CLIENT(threading.Thread):
                 9: {
                     1: " PROTO", #RON PROTO DONT CHANGE 
                     2: int(get_random_avatar()),
-                    3: 901049014,
+                    3: 901049017,
                     4: 330,
                     5: 801040108,
                     8: "Friend",
@@ -1046,12 +1069,12 @@ class FF_CLIENT(threading.Thread):
                         2: 1,
                     },
                     14: {
-                        1: 11017917409,
+                        1: 12546809981,
                         2: 8,
                         3: "\u0010\u0015\b\n\u000b\u0013\f\u000f\u0011\u0004\u0007\u0002\u0003\r\u000e\u0012\u0001\u0005\u0006"
                     }
                 },
-                10: "IND",
+                10: "PK",
                 13: {
                     1: "https://graph.facebook.com/v9.0/253082355523299/picture?width=160&height=160",
                     2: 1,
@@ -1064,7 +1087,7 @@ class FF_CLIENT(threading.Thread):
                         3: random.randint(1, 180),
                         4: 1,
                         5: int(datetime.now().timestamp()),
-                        6: "IND"
+                        6: "PK"
                     }
                 }
             }
@@ -1351,8 +1374,8 @@ class FF_CLIENT(threading.Thread):
 [FF1493]╠══════════════════════════╣
 [FFFFFF]🤖 Want to buy a bot?  
 [FFFFFF]📩 Contact the developer  
-[FFD700]👑 NAME : [FFFF00]Saeed   
-[FFD700]📌 TELEGRAM : [00BFFF]@saeedxdie  
+[FFD700]👑 NAME : [FFFF00]ꜱꫝᴇᴇᴅ   
+[FFD700]📌 Instagram : [00BFFF]@_ꜱꫝᴇᴇᴅ 
 [FF1493]╚══════════════════════════╝""", idinv
                             )
                     )
@@ -1387,12 +1410,12 @@ class FF_CLIENT(threading.Thread):
 
 [FF0000][c]━━━━━━━━━━━━━━━━━━━━[/c]
 
-[FFD700][b][c]For support or to get your personal bot, contact:[/b]
+[FFD700][b][c]thank you for supporting follow ig _ꜱꫝᴇᴇᴅ:[/b]
 
-[1E90FF][b][c]Telegram Name: SAEED[/b]
-[1E90FF][c]@saeedxdie[/c]
+[1E90FF][b][c] Instagram Name: _ꜱꫝᴇᴇᴅ[/b]
+[1E90FF][c]@_ꜱꫝᴇᴇᴅ[/c]
 
-[FFD700][b][c]Developer: TSunXSaeed [/b]
+[FFD700][b][c]Developer: ꜱꫝᴇᴇᴅ [/b]
 
 [FF0000][c]━━━━━━━━━━━━━━━━━━━━[/c]""",uid
                                 )
@@ -1418,15 +1441,15 @@ class FF_CLIENT(threading.Thread):
                         clients.send(
                             self.GenResponsMsg(
                                 f"""[C][B][FF0000]╔══════════╗
-[FFFFFF]✨ If anyone wants to buy TCP bot  
-[FFFFFF]          ⚡ Or purchase access ❤️  
-[FFFFFF]                   Just contact me...  
+[FFFFFF]✨ folow on Instagram   
+[FFFFFF]          ⚡ _ꜱꫝᴇᴇᴅ ❤️  
+[FFFFFF]                   thank for support 
 [FF0000]╠══════════╣
-[FFD700]⚡ OWNER : [FFFFFF]Saeed   
-[FFD700]⚡ TELEGRAM : [FFFFFF]@saeedxdie  
-[FFD700]✨ Name on Telegram : [FFFFFF]SAEED❤️  
+[FFD700]⚡ OWNER : [FFFFFF]ꜱꫝᴇᴇᴅ   
+[FFD700]⚡ TELEGRAM : [FFFFFF]@ꜱꫝᴇᴇᴅ 
+[FFD700]✨ Name on instagram : [FFFFFF]_ꜱꫝᴇᴇᴅ❤️  
 [FF0000]╚══════════╝
-[FFD700]✨ Developer —͟͞͞ </> TSunXSaeed  ⚡""", uid
+[FFD700]✨ Developer —͟͞͞ </> ꜱꫝᴇᴇᴅ  ⚡""", uid
                             )
                         )
                     except Exception as e:
@@ -1608,7 +1631,7 @@ class FF_CLIENT(threading.Thread):
 
 [FF0000]╚══════════╝
 
-[FFD700]✨ Developer —͟͞͞ </> TSunXSaeed  ⚡""",
+[FFD700]✨ Developer —͟͞͞ </> ꜱꫝᴇᴇᴅ  ⚡""",
                                     uid
                                 )
                             )
@@ -1622,8 +1645,6 @@ class FF_CLIENT(threading.Thread):
                     except Exception as e:
                         logging.error(f"Error processing /3 command: {e}. Restarting.")
                         restart_program()
-                        
-                
                 if "1200" in data.hex()[0:4] and b"/4" in data:
                     try:
                         i = re.split("/4", str(data))[1]
@@ -1664,7 +1685,7 @@ class FF_CLIENT(threading.Thread):
 
 [FF0000]╚══════════╝
 
-[FFD700]✨ Developer —͟͞͞ </> TSunXSaeed  ⚡""",
+[FFD700]✨ Developer —͟͞͞ </> _ꜱꫝᴇᴇᴅ  ⚡""",
                                     uid))
 
                         sleep(5)
@@ -1718,7 +1739,7 @@ class FF_CLIENT(threading.Thread):
 
 [FF0000]╚══════════╝
 
-[FFD700]✨ Developer —͟͞͞ </> TSunXSaeed  ⚡""",
+[FFD700]✨ Developer —͟͞͞ </> ꜱꫝᴇᴇᴅ  ⚡""",
                                     uid))
 
                         sleep(5)
@@ -1770,7 +1791,7 @@ class FF_CLIENT(threading.Thread):
 
 [FF0000]╚══════════╝
 
-[FFD700]✨ Developer —͟͞͞ </> TSunXSaeed  ⚡""",
+[FFD700]✨ Developer —͟͞͞ </> ꜱꫝᴇᴇᴅ  ⚡""",
                                     uid))
 
                         sleep(4)
@@ -1961,7 +1982,7 @@ class FF_CLIENT(threading.Thread):
                 
                 
 
-                if "1200" in data.hex()[0:4] and b"WELCOME TO [FFFFF00]TSunXSaeed  HERE [ffffff]BOT" in data:
+                if "1200" in data.hex()[0:4] and b"WELCOME TO [FFFFF00]\\xe1\\x9f\\xb1\\xe1\\xba\\x9d\\xe1\\xb4\\xb1\\xe1\\xb4\\xb1\\xe1\\xb4\\x8d TCP [ffffff]BOT" in data:
                     pass
                 else:
                 
@@ -2157,18 +2178,19 @@ class FF_CLIENT(threading.Thread):
                                 player_id = command_split[1].split('(')[0].strip()
                                 banned_status = check_banned_status(player_id)
                                 player_id_fixed = fix_num(player_id)
-                                status = banned_status.get('status', 'Unknown')
-                                player_name = banned_status.get('player_name', 'Unknown')
+
+                                # Format the response using the new API format
                                 response_message = (
-                                    f"{generate_random_color()}Player Name: {player_name}\n"
-                                    f"Player ID : {player_id_fixed}\n"
-                                    f"Status: {status}"
+                                    f"{generate_random_color()}Player Name: {banned_status.get('nickname', 'N/A')}\n"
+                                    f"Player ID: {player_id_fixed}\n"
+                                    f"Level: {banned_status.get('AccountLevel', 'N/A')}\n"
+                                    f"Status: {banned_status.get('status', 'N/A')}\n"
+                                    f"Last Login: {banned_status.get('Last_Login', 'N/A')}"
                                 )
                                 clients.send(self.GenResponsMsg(response_message, uid))
                         except Exception as e:
                             logging.error(f"Error in /check command: {e}. Restarting.")
                             restart_program()
-
                     if "1200" in data.hex()[0:4] and b"/help" in data:
                         try:
                             json_result = get_available_room(data.hex()[10:])
@@ -2177,7 +2199,7 @@ class FF_CLIENT(threading.Thread):
                             
                             clients.send(
                                 self.GenResponsMsg(
-                                        f"""[B][C][FFFF00]✨ MoTo^.^Kaka  GAME BOT ✨
+                                        f"""[B][C][FFFF00]✨ ꜱꫝᴇᴇᴅ GAME BOT ✨
 [FFFFFF]WELCOME! SEE COMMANDS BELOW 👇
 
 """, uid
@@ -2229,7 +2251,7 @@ class FF_CLIENT(threading.Thread):
 [C][B][00CED1] GENERAL COMMANDS
 [C][B][FFFF00]───────────────
 
-[00FF00]/🙃likes [id] -> [FFFFFF]Get 100 Likes
+[00FF00]
 [00FF00]/🙃info [id] -> [FFFFFF]Player Full Info
 [00FF00]/🙃status [id] -> [FFFFFF]Check Player Status
 [00FF00]/🙃visit [id] -> [FFFFFF]Increase Visitors
@@ -2245,7 +2267,7 @@ class FF_CLIENT(threading.Thread):
 [C][B][FFFF00]───────────────
 
 [00FF00]/🙃biccco [id] -> [FFFFFF]Get Player Bio
-[00FF00]/🙃ai [word] -> [FFFFFF]Ask Bharat AI
+[00FF00]/🙃ai [word] -> [FFFFFF]Ask TSun AI
 [00FF00]/🙃admin -> [FFFFFF]Know Bot's Admin
                                """, uid
                                     )
@@ -2326,7 +2348,7 @@ class FF_CLIENT(threading.Thread):
                         clients.send(
                             self.GenResponsMsg(f"[C][B][00FF00]Successfully joined the room.", uid)
                         )
-
+#ob51rio
                     except Exception as e:
                         # Updated the error message to reflect the new command name
                         logging.error(f"An error occurred during /join: {e}. Restarting.")
@@ -2654,7 +2676,7 @@ class FF_CLIENT(threading.Thread):
         now = datetime.now()
         now =str(now)[:len(str(now))-7]
         formatted_time = date
-        payload = bytes.fromhex("1a13323032352d30372d33302031313a30323a3531220966726565206669726528013a07312e3131342e32422c416e64726f6964204f5320372e312e32202f204150492d323320284e32473438482f373030323530323234294a0848616e6468656c645207416e64726f69645a045749464960c00c68840772033332307a1f41524d7637205646507633204e454f4e20564d48207c2032343635207c203480019a1b8a010f416472656e6f2028544d292036343092010d4f70656e474c20455320332e319a012b476f6f676c657c31663361643662372d636562342d343934622d383730622d623164616364373230393131a2010c3139372e312e31322e313335aa0102656eb201203939366136323964626364623339363462653662363937386635643831346462ba010134c2010848616e6468656c64ca011073616d73756e6720534d2d473935354eea014066663930633037656239383135616633306134336234613966363031393531366530653463373033623434303932353136643064656661346365663531663261f00101ca0207416e64726f6964d2020457494649ca03203734323862323533646566633136343031386336303461316562626665626466e003daa907e803899b07f003bf0ff803ae088004999b078804daa9079004999b079804daa907c80403d204262f646174612f6170702f636f6d2e6474732e667265656669726574682d312f6c69622f61726de00401ea044832303837663631633139663537663261663465376665666630623234643964397c2f646174612f6170702f636f6d2e6474732e667265656669726574682d312f626173652e61706bf00403f804018a050233329a050a32303139313138363933a80503b205094f70656e474c455332b805ff7fc00504e005dac901ea0507616e64726f6964f2055c4b71734854394748625876574c6668437950416c52526873626d43676542557562555551317375746d525536634e30524f3751453141486e496474385963784d614c575437636d4851322b7374745279377830663935542b6456593d8806019006019a060134a2060134b2061e40001147550d0c074f530b4d5c584d57416657545a065f2a091d6a0d5033")
+        payload = bytes.fromhex("1a13323032352d30372d33302031313a30323a3531220966726565206669726528013a07312e3131382e31422c416e64726f6964204f5320372e312e32202f204150492d323320284e32473438482f373030323530323234294a0848616e6468656c645207416e64726f69645a045749464960c00c68840772033332307a1f41524d7637205646507633204e454f4e20564d48207c2032343635207c203480019a1b8a010f416472656e6f2028544d292036343092010d4f70656e474c20455320332e319a012b476f6f676c657c31663361643662372d636562342d343934622d383730622d623164616364373230393131a2010c3139372e312e31322e313335aa0102656eb201203939366136323964626364623339363462653662363937386635643831346462ba010134c2010848616e6468656c64ca011073616d73756e6720534d2d473935354eea014066663930633037656239383135616633306134336234613966363031393531366530653463373033623434303932353136643064656661346365663531663261f00101ca0207416e64726f6964d2020457494649ca03203734323862323533646566633136343031386336303461316562626665626466e003daa907e803899b07f003bf0ff803ae088004999b078804daa9079004999b079804daa907c80403d204262f646174612f6170702f636f6d2e6474732e667265656669726574682d312f6c69622f61726de00401ea044832303837663631633139663537663261663465376665666630623234643964397c2f646174612f6170702f636f6d2e6474732e667265656669726574682d312f626173652e61706bf00403f804018a050233329a050a32303139313138363933a80503b205094f70656e474c455332b805ff7fc00504e005dac901ea0507616e64726f6964f2055c4b71734854394748625876574c6668437950416c52526873626d43676542557562555551317375746d525536634e30524f3751453141486e496474385963784d614c575437636d4851322b7374745279377830663935542b6456593d8806019006019a060134a2060134b2061e40001147550d0c074f530b4d5c584d57416657545a065f2a091d6a0d5033")
         payload = payload.replace(b"2025-07-30 11:02:51", str(now).encode())
         payload = payload.replace(b"ff90c07eb9815af30a43b4a9f6019516e0e4c703b44092516d0defa4cef51f2a", NEW_ACCESS_TOKEN.encode("UTF-8"))
         payload = payload.replace(b"996a629dbcdb3964be6b6978f5d814db", NEW_EXTERNAL_ID.encode("UTF-8"))
@@ -2686,10 +2708,10 @@ class FF_CLIENT(threading.Thread):
             'Authorization': f'Bearer {JWT_TOKEN}',
             'X-Unity-Version': '2018.4.11f1',
             'X-GA': 'v1 1',
-            'ReleaseVersion': 'OB50',
+            'ReleaseVersion': 'OB51',
             'Content-Type': 'application/x-www-form-urlencoded',
             'User-Agent': 'Dalvik/2.1.0 (Linux; U; Android 9; G011A Build/PI)',
-            'Host': 'clientbp.ggblueshark.com',
+            'Host': 'clientbp.common.ggbluefox.com',
             'Connection': 'close',
             'Accept-Encoding': 'gzip, deflate, br',
         }
@@ -2740,7 +2762,7 @@ class FF_CLIENT(threading.Thread):
     def TOKEN_MAKER(self,OLD_ACCESS_TOKEN , NEW_ACCESS_TOKEN , OLD_OPEN_ID , NEW_OPEN_ID,id):
         headers = {
                        'X-Unity-Version': '2018.4.11f1',
-            'ReleaseVersion': 'OB50',
+            'ReleaseVersion': 'OB51',
             'Content-Type': 'application/x-www-form-urlencoded',
             'X-GA': 'v1 1',
             'Content-Length': '928',
@@ -2749,7 +2771,7 @@ class FF_CLIENT(threading.Thread):
             'Connection': 'Keep-Alive',
             'Accept-Encoding': 'gzip'
         }
-        data = bytes.fromhex('1a13323032352d30372d33302031313a30323a3531220966726565206669726528013a07312e3131342e32422c416e64726f6964204f5320372e312e32202f204150492d323320284e32473438482f373030323530323234294a0848616e6468656c645207416e64726f69645a045749464960c00c68840772033332307a1f41524d7637205646507633204e454f4e20564d48207c2032343635207c203480019a1b8a010f416472656e6f2028544d292036343092010d4f70656e474c20455320332e319a012b476f6f676c657c31663361643662372d636562342d343934622d383730622d623164616364373230393131a2010c3139372e312e31322e313335aa0102656eb201203939366136323964626364623339363462653662363937386635643831346462ba010134c2010848616e6468656c64ca011073616d73756e6720534d2d473935354eea014066663930633037656239383135616633306134336234613966363031393531366530653463373033623434303932353136643064656661346365663531663261f00101ca0207416e64726f6964d2020457494649ca03203734323862323533646566633136343031386336303461316562626665626466e003daa907e803899b07f003bf0ff803ae088004999b078804daa9079004999b079804daa907c80403d204262f646174612f6170702f636f6d2e6474732e667265656669726574682d312f6c69622f61726de00401ea044832303837663631633139663537663261663465376665666630623234643964397c2f646174612f6170702f636f6d2e6474732e667265656669726574682d312f626173652e61706bf00403f804018a050233329a050a32303139313138363933a80503b205094f70656e474c455332b805ff7fc00504e005dac901ea0507616e64726f6964f2055c4b71734854394748625876574c6668437950416c52526873626d43676542557562555551317375746d525536634e30524f3751453141486e496474385963784d614c575437636d4851322b7374745279377830663935542b6456593d8806019006019a060134a2060134b2061e40001147550d0c074f530b4d5c584d57416657545a065f2a091d6a0d5033')
+        data = bytes.fromhex('1a13323032352d30372d33302031313a30323a3531220966726565206669726528013a07312e3131382e31422c416e64726f6964204f5320372e312e32202f204150492d323320284e32473438482f373030323530323234294a0848616e6468656c645207416e64726f69645a045749464960c00c68840772033332307a1f41524d7637205646507633204e454f4e20564d48207c2032343635207c203480019a1b8a010f416472656e6f2028544d292036343092010d4f70656e474c20455320332e319a012b476f6f676c657c31663361643662372d636562342d343934622d383730622d623164616364373230393131a2010c3139372e312e31322e313335aa0102656eb201203939366136323964626364623339363462653662363937386635643831346462ba010134c2010848616e6468656c64ca011073616d73756e6720534d2d473935354eea014066663930633037656239383135616633306134336234613966363031393531366530653463373033623434303932353136643064656661346365663531663261f00101ca0207416e64726f6964d2020457494649ca03203734323862323533646566633136343031386336303461316562626665626466e003daa907e803899b07f003bf0ff803ae088004999b078804daa9079004999b079804daa907c80403d204262f646174612f6170702f636f6d2e6474732e667265656669726574682d312f6c69622f61726de00401ea044832303837663631633139663537663261663465376665666630623234643964397c2f646174612f6170702f636f6d2e6474732e667265656669726574682d312f626173652e61706bf00403f804018a050233329a050a32303139313138363933a80503b205094f70656e474c455332b805ff7fc00504e005dac901ea0507616e64726f6964f2055c4b71734854394748625876574c6668437950416c52526873626d43676542557562555551317375746d525536634e30524f3751453141486e496474385963784d614c575437636d4851322b7374745279377830663935542b6456593d8806019006019a060134a2060134b2061e40001147550d0c074f530b4d5c584d57416657545a065f2a091d6a0d5033')
         data = data.replace(OLD_OPEN_ID.encode(),NEW_OPEN_ID.encode())
         data = data.replace(OLD_ACCESS_TOKEN.encode() , NEW_ACCESS_TOKEN.encode())
         hex = data.hex()

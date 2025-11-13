@@ -66,6 +66,13 @@ Welcome to the **TSunTCP Bot**! This powerful bot is designed to interact with t
     }
     ```
     *Replace with your actual bot credentials `UID` and `PASSWORD` .*
+    ```json
+    Change Region To Your Own Region On Lines : 
+    799, 862, 884, 1077, 1090
+
+    Change Uid With Your Own Guest Uid On Lines : 
+    841, 960, 988, 1030, 1052, 1072
+    ```
 
 4.  **Start:**
     For Start Bot Run This Command In Terminal.
@@ -84,10 +91,10 @@ The TSunTCP Bot Support These Commands In Game. Some Commands In Beta. So Some C
 
 | Command                 | Description                                                               |
 | :---------------------- | :------------------------------------------------------------------------ |
-| `/3`                   | Creates a 3-player group. `(In Beta)`                                               |
-| `/4`                   | Creates a 4-player group. `(In Beta)`                                                 |
-| `/5`                   | Creates a 5-player group. `(In Beta)`                                                 |
-| `/6`                   | Creates a 6-player group. `(In Beta)`                                                 |
+| `/3`                   | Creates a 3-player group.                                               |
+| `/4`                   | Creates a 4-player group.                                                  |
+| `/5`                   | Creates a 5-player group.                                                  |
+| `/6`                   | Creates a 6-player group.                                                  |
 | `/inv [uid]`     | Invites a specific player to your current squad.                          |
 | `/join [team_code]`    | Joins a squad using a specific team code. |
 | `/solo`                | Leaves if In group/squad and Return To solo mode.                  |
@@ -118,11 +125,11 @@ The TSunTCP Bot Support These Commands In Game. Some Commands In Beta. So Some C
 | Command                 | Description                                                               |
 | :---------------------- | :------------------------------------------------------------------------ |
 | `/likes [player_id]`   | Grants 100 likes to the specified player's profile. `(In Beta)`                          |
-| `/info [player_id]`    | displays full information about the specified player.`(In Beta)`       |
-| `/status [player_id]`  | displays the current in-game status of the specified player.`(In Beta)`   |
-| `/visit [player_id]`   | Increases the visitor count on the specified player's profile.`(In Beta)`            |
-| `/check [player_id]`   | Checks the ban status of the specified player.`(In Beta)`                            |
-| `/region`              | Displays information about available game regions.`(In Beta)`                        |
+| `/info [player_id]`    | displays full information about the specified player.       |
+| `/status [player_id]`  | displays the current in-game status of the specified player.   |
+| `/visit [player_id]`   | Increases the visitor count on the specified player's profile.            |
+| `/check [player_id]`   | Checks the ban status of the specified player.                            |
+| `/region`              | Displays information about available game regions.                        |
 
 ### 🧠 Extra & AI
 
