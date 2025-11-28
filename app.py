@@ -769,7 +769,7 @@ class FF_CLIENT(threading.Thread):
         1: 78,
         2: {
             1: int(idroom),
-            2: "iG:[C][B][FF0000] ꜱꫝᴇᴇᴅ",
+            2: "iG:[C][B][FF0000] WOLLEM",
             4: 330,
             5: 6000,
             6: 201,
@@ -1372,10 +1372,10 @@ class FF_CLIENT(threading.Thread):
 [FFFFFF]⚡ To see my commands:  
 [FFFFFF]👉 Send /help or any emoji  
 [FF1493]╠══════════════════════════╣
-[FFFFFF]🤖 Want to buy a bot?  
+[FFFFFF]🤖 Want to TRY a bot?  
 [FFFFFF]📩 Contact the developer  
-[FFD700]👑 NAME : [FFFF00]ꜱꫝᴇᴇᴅ   
-[FFD700]📌 Instagram : [00BFFF]@_ꜱꫝᴇᴇᴅ 
+[FFD700]👑 NAME : [FFFF00]WOLLEM   
+[FFD700]📌 Instagram : [00BFFF]@WOLLEM.YT 
 [FF1493]╚══════════════════════════╝""", idinv
                             )
                     )
@@ -1410,12 +1410,12 @@ class FF_CLIENT(threading.Thread):
 
 [FF0000][c]━━━━━━━━━━━━━━━━━━━━[/c]
 
-[FFD700][b][c]thank you for supporting follow ig _ꜱꫝᴇᴇᴅ:[/b]
+[FFD700][b][c]thank you for supporting follow ig WOLLEM.YT:[/b]
 
-[1E90FF][b][c] Instagram Name: _ꜱꫝᴇᴇᴅ[/b]
-[1E90FF][c]@_ꜱꫝᴇᴇᴅ[/c]
+[1E90FF][b][c] Instagram Name: WOLLEM.YT[/b]
+[1E90FF][c]@WOLLEM.YT[/c]
 
-[FFD700][b][c]Developer: ꜱꫝᴇᴇᴅ [/b]
+[FFD700][b][c]Developer: WOLLEM [/b]
 
 [FF0000][c]━━━━━━━━━━━━━━━━━━━━[/c]""",uid
                                 )
@@ -1442,14 +1442,14 @@ class FF_CLIENT(threading.Thread):
                             self.GenResponsMsg(
                                 f"""[C][B][FF0000]╔══════════╗
 [FFFFFF]✨ folow on Instagram   
-[FFFFFF]          ⚡ _ꜱꫝᴇᴇᴅ ❤️  
+[FFFFFF]          ⚡ WOLLEM ❤️  
 [FFFFFF]                   thank for support 
 [FF0000]╠══════════╣
-[FFD700]⚡ OWNER : [FFFFFF]ꜱꫝᴇᴇᴅ   
-[FFD700]⚡ TELEGRAM : [FFFFFF]@ꜱꫝᴇᴇᴅ 
-[FFD700]✨ Name on instagram : [FFFFFF]_ꜱꫝᴇᴇᴅ❤️  
+[FFD700]⚡ OWNER : [FFFFFF]KOMA YT   
+[FFD700]⚡ TELEGRAM : [FFFFFF]@SOON 
+[FFD700]✨ Name on instagram : [FFFFFF] WOLLEM.YT❤️  
 [FF0000]╚══════════╝
-[FFD700]✨ Developer —͟͞͞ </> ꜱꫝᴇᴇᴅ  ⚡""", uid
+[FFD700]✨ Developer —͟͞͞ </> WOLLEM  ⚡""", uid
                             )
                         )
                     except Exception as e:
@@ -1631,7 +1631,7 @@ class FF_CLIENT(threading.Thread):
 
 [FF0000]╚══════════╝
 
-[FFD700]✨ Developer —͟͞͞ </> ꜱꫝᴇᴇᴅ  ⚡""",
+[FFD700]✨ Developer —͟͞͞ </> WOLLEM  ⚡""",
                                     uid
                                 )
                             )
@@ -1685,7 +1685,7 @@ class FF_CLIENT(threading.Thread):
 
 [FF0000]╚══════════╝
 
-[FFD700]✨ Developer —͟͞͞ </> _ꜱꫝᴇᴇᴅ  ⚡""",
+[FFD700]✨ Developer —͟͞͞ </> WOLLEM  ⚡""",
                                     uid))
 
                         sleep(5)
@@ -1739,7 +1739,7 @@ class FF_CLIENT(threading.Thread):
 
 [FF0000]╚══════════╝
 
-[FFD700]✨ Developer —͟͞͞ </> ꜱꫝᴇᴇᴅ  ⚡""",
+[FFD700]✨ Developer —͟͞͞ </> WOLLEM  ⚡""",
                                     uid))
 
                         sleep(5)
@@ -1791,7 +1791,7 @@ class FF_CLIENT(threading.Thread):
 
 [FF0000]╚══════════╝
 
-[FFD700]✨ Developer —͟͞͞ </> ꜱꫝᴇᴇᴅ  ⚡""",
+[FFD700]✨ Developer —͟͞͞ </> WOLLEM  ⚡""",
                                     uid))
 
                         sleep(4)
@@ -2199,7 +2199,7 @@ class FF_CLIENT(threading.Thread):
                             
                             clients.send(
                                 self.GenResponsMsg(
-                                        f"""[B][C][FFFF00]✨ ꜱꫝᴇᴇᴅ GAME BOT ✨
+                                        f"""[B][C][FFFF00]✨ WOLLEM GAME BOT ✨
 [FFFFFF]WELCOME! SEE COMMANDS BELOW 👇
 
 """, uid
